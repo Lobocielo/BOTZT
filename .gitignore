@@ -1,0 +1,19 @@
+# Entorno virtual y temporales
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+ENV/
+env/
+
+# Configuración y secretos (¡MUY IMPORTANTE NO SUBIR!)
+.env
+
+# Archivos de datos del bot (opcional: si quieres subirlos, borra estas líneas)
+# Si no los ignoras, se subirán tus datos locales a GitHub.
+# Para hosting 24/7, es mejor ignorarlos o gestionarlos adecuadamente.
+warns.json
+economy.json
+levels.json
