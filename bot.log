@@ -1,0 +1,8 @@
+2026-05-17 13:50:17,773 - discord.client - WARNING - PyNaCl is not installed, voice will NOT be supported
+2026-05-17 13:50:17,774 - discord.client - WARNING - davey is not installed, voice will NOT be supported
+2026-05-17 14:27:38,132 - discord.client - INFO - logging in using static token
+2026-05-17 14:32:15,065 - discord.client - INFO - logging in using static token
+2026-05-17 14:32:48,142 - discord.client - INFO - logging in using static token
+2026-05-17 14:32:49,128 - DiscordBot - INFO - Vistas persistentes registradas
+2026-05-17 14:32:49,809 - discord.gateway - INFO - Shard ID None has connected to Gateway (Session ID: 884590ae252aeabace2150cf1494bada).
+2026-05-17 14:32:52,429 - DiscordBot - INFO - ✅ Bot conectado como BotTT#1970 (ID: 1202810580092715068)
