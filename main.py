@@ -734,5 +734,23 @@ async def help(ctx):
     await ctx.send(embed=embed)
 
 # ==================== EJECUCIÓN ====================
+# ==================== WEB SERVER (KEEP ALIVE) ====================
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
+
+class MyHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-type", "text/plain")
+        self.end_headers()
+        self.wfile.write(b"Bot is alive!")
+
+def run_web_server():
+    port = int(os.getenv("PORT", 8080))
+    server = HTTPServer(("0.0.0.0", port), MyHandler)
+    server.serve_forever()
+
 if __name__ == "__main__":
+    print("🌐 Iniciando servidor web para mantener el bot activo...")
+    threading.Thread(target=run_web_server, daemon=True).start()
     bot.run(TOKEN)
