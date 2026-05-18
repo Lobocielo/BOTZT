@@ -25,8 +25,6 @@ CLEAN_CHANNELS_ON_SETUP = False
 
 # ==================== ARCHIVOS DE DATOS ====================
 WARN_FILE = "warns.json"
-ECONOMY_FILE = "economy.json"
-LEVELS_FILE = "levels.json"
 
 def load_json(file):
     if not os.path.exists(file):
@@ -90,8 +88,6 @@ bot.remove_command('help')  # 🔥 Elimina el comando help por defecto
 
 # Datos en memoria
 user_messages = {}
-economy = load_json(ECONOMY_FILE)
-levels = load_json(LEVELS_FILE)
 
 # ==================== FUNCIONES AUXILIARES ====================
 def make_embed(title: str, description: str, color: discord.Color, *,
@@ -145,22 +141,7 @@ async def log_mod_action(guild: discord.Guild, action: str, target: discord.Memb
     embed = make_embed(f"🛡️ {action}", f"**Usuario:** {target.mention} (`{target.id}`)\n**Moderador:** {moderator.mention}\n**Razón:** {reason or 'No especificada'}", discord.Color.orange(), thumbnail=target.avatar.url if target.avatar else None, footer=f"ID: {target.id}")
     await log_channel.send(embed=embed)
 
-# ==================== SISTEMA DE ECONOMÍA ====================
-def get_balance(user_id: int):
-    return economy.get(str(user_id), 0)
-
-def add_coins(user_id: int, amount: int):
-    uid = str(user_id)
-    economy[uid] = economy.get(uid, 0) + amount
-    save_json(ECONOMY_FILE, economy)
-
-def remove_coins(user_id: int, amount: int):
-    uid = str(user_id)
-    if economy.get(uid, 0) >= amount:
-        economy[uid] -= amount
-        save_json(ECONOMY_FILE, economy)
-        return True
-    return False
+# (Sistema de economía eliminado)
 
 # ==================== VISTAS PERSISTENTES ====================
 class CloseTicketView(View):
@@ -403,77 +384,7 @@ async def clear(ctx, amount: int):
     await ctx.channel.purge(limit=amount+1)
     await ctx.send(f"🧹 {amount} mensajes eliminados.", delete_after=3)
 
-# ==================== COMANDOS DE ECONOMÍA Y DIVERSIÓN ====================
-@bot.command()
-async def balance(ctx, member: discord.Member = None):
-    member = member or ctx.author
-    bal = get_balance(member.id)
-    embed = make_embed(f"💰 Balance de {member.display_name}", f"**Monedas:** {bal} :coin:", discord.Color.gold(), thumbnail=member.avatar.url if member.avatar else None)
-    await ctx.send(embed=embed)
-
-@bot.command()
-async def daily(ctx):
-    now = datetime.now(timezone.utc)
-    last = levels.get(str(ctx.author.id), {}).get("daily", 0)
-    if now.timestamp() - last < 86400:
-        return await ctx.send("Ya reclamaste tu daily. Vuelve mañana.", delete_after=5)
-    add_coins(ctx.author.id, 100)
-    if "daily" not in levels.get(str(ctx.author.id), {}):
-        if str(ctx.author.id) not in levels: levels[str(ctx.author.id)] = {}
-    levels[str(ctx.author.id)]["daily"] = now.timestamp()
-    save_json(LEVELS_FILE, levels)
-    await ctx.send("✅ Has recibido 100 monedas diarias.")
-
-@bot.command()
-async def work(ctx):
-    earnings = random.randint(20, 80)
-    add_coins(ctx.author.id, earnings)
-    await ctx.send(f"💼 Trabajaste y ganaste **{earnings}** monedas.")
-
-@bot.command()
-async def rob(ctx, member: discord.Member):
-    if member.id == ctx.author.id: return await ctx.send("No te puedes robar a ti mismo.")
-    if random.random() < 0.4:
-        amount = min(get_balance(member.id), random.randint(10, 200))
-        if amount == 0: return await ctx.send("Ese usuario no tiene monedas.")
-        if remove_coins(member.id, amount):
-            add_coins(ctx.author.id, amount)
-            await ctx.send(f"🦹‍♂️ Robaste **{amount}** monedas de {member.mention}.")
-        else:
-            await ctx.send("No se pudo robar.")
-    else:
-        penalty = random.randint(20, 100)
-        remove_coins(ctx.author.id, penalty)
-        await ctx.send(f"❌ Fallaste! Perdiste **{penalty}** monedas.")
-
-@bot.command()
-@commands.has_permissions(administrator=True)
-async def give(ctx, member: discord.Member, amount: int):
-    add_coins(member.id, amount)
-    await ctx.send(f"✅ {amount} monedas entregadas a {member.mention}.")
-
-# ==================== COMANDOS DE NIVELES ====================
-@bot.command()
-async def rank(ctx, member: discord.Member = None):
-    member = member or ctx.author
-    xp = levels.get(str(member.id), {}).get("xp", 0)
-    level = int(xp ** 0.5 // 10)
-    embed = make_embed(f"📊 Nivel de {member.display_name}", f"**XP:** {xp}\n**Nivel:** {level}", discord.Color.blue(), thumbnail=member.avatar.url if member.avatar else None)
-    await ctx.send(embed=embed)
-
-@bot.command()
-async def leaderboard(ctx):
-    sorted_users = sorted(levels.items(), key=lambda x: x[1].get("xp", 0), reverse=True)[:10]
-    if not sorted_users: return await ctx.send("No hay datos de niveles.")
-    desc = ""
-    for i, (uid, data) in enumerate(sorted_users, 1):
-        user = ctx.guild.get_member(int(uid))
-        name = user.display_name if user else uid
-        xp = data.get("xp", 0)
-        level = int(xp ** 0.5 // 10)
-        desc += f"{i}. {name} - Nivel {level} ({xp} XP)\n"
-    embed = make_embed("🏆 Clasificación de niveles", desc, discord.Color.gold(), thumbnail=ctx.guild.icon.url if ctx.guild.icon else None)
-    await ctx.send(embed=embed)
+# (Comandos de economía y niveles eliminados)
 
 # ==================== COMANDOS DE ENCUESTAS Y SORTEOS ====================
 @bot.command()
@@ -631,20 +542,10 @@ async def roles_panel(ctx):
     embed = make_embed("🎭 SELECCIÓN DE ROLES", "Elige tus roles del menú.", discord.Color.gold(), thumbnail=ctx.guild.icon.url if ctx.guild.icon else None)
     await ctx.send(embed=embed, view=view)
 
-# ==================== SISTEMA DE NIVELES POR MENSAJES ====================
+# ==================== PROCESAMIENTO DE MENSAJES ====================
 @bot.event
 async def on_message(message):
     if message.author.bot: return
-    uid = str(message.author.id)
-    if uid not in levels:
-        levels[uid] = {"xp": 0}
-    levels[uid]["xp"] = levels[uid].get("xp", 0) + random.randint(5, 15)
-    xp = levels[uid]["xp"]
-    new_level = int(xp ** 0.5 // 10)
-    old_level = int((xp - 15) ** 0.5 // 10) if xp >= 15 else 0
-    if new_level > old_level and new_level > 0:
-        await message.channel.send(f"🎉 {message.author.mention} ha subido al nivel **{new_level}**!")
-    save_json(LEVELS_FILE, levels)
     await bot.process_commands(message)
 
 # ==================== BIENVENIDA MEJORADA ====================
@@ -658,7 +559,7 @@ async def on_member_join(member):
         embed = make_embed(f"✨ BIENVENIDO {member.display_name} ✨", f"```fix\nTe damos la bienvenida a {SERVER_NAME}\n```\n📌 Lee las reglas\n💬 Preséntate en el chat\n🎫 Abre un ticket si necesitas ayuda\n\n📊 Ahora somos **{member.guild.member_count}** miembros.", discord.Color.green(), thumbnail=member.avatar.url if member.avatar else member.default_avatar.url, image=banner, footer="¡Disfruta la comunidad!")
         await welcome_ch.send(content=member.mention, embed=embed)
     try:
-        await member.send(f"👋 ¡Bienvenido a {SERVER_NAME}! Usa `!daily`, `!work`, `!balance` para divertirte.")
+        await member.send(f"👋 ¡Bienvenido a {SERVER_NAME}! Esperamos que disfrutes de tu estadía.")
     except: pass
     log_ch = discord.utils.get(member.guild.text_channels, name=CHANNEL_NAMES["member-logs"])
     if log_ch:
@@ -725,8 +626,6 @@ async def on_ready():
 async def help(ctx):
     embed = make_embed("📚 COMANDOS DISPONIBLES", 
         "**Moderación**\n`!warn`, `!warns`, `!delwarn`, `!mute`, `!unmute`, `!clear`, `!slowmode`, `!lock`, `!unlock`, `!report`, `!voicekick`, `!voicemove`\n\n"
-        "**Economía y diversión**\n`!balance`, `!daily`, `!work`, `!rob`, `!give`\n\n"
-        "**Niveles**\n`!rank`, `!leaderboard`\n\n"
         "**Utilidades**\n`!avatar`, `!userinfo`, `!serverinfo`, `!say`, `!embed`, `!poll`, `!sugerir`\n\n"
         "**Sorteos**\n`!giveaway` (admin)\n\n"
         "**Administración**\n`!setup`, `!roles_panel`", 
