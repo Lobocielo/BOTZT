@@ -239,7 +239,7 @@ class RoleSelectView(View):
 
 class ModPanelView(View):
     def __init__(self):
-        super().__init__(timeout=120)
+        super().__init__(timeout=None)
     
     @select(placeholder="🔧 Acción de moderación...", options=[
         discord.SelectOption(label="🔨 Warn", value="warn", emoji="⚠️"),
@@ -744,6 +744,11 @@ class MyHandler(BaseHTTPRequestHandler):
         self.send_header("Content-type", "text/plain")
         self.end_headers()
         self.wfile.write(b"Bot is alive!")
+
+    def do_HEAD(self):
+        self.send_response(200)
+        self.send_header("Content-type", "text/plain")
+        self.end_headers()
 
 def run_web_server():
     port = int(os.getenv("PORT", 8080))
